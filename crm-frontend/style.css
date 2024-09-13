@@ -1,0 +1,172 @@
+.flex {
+  display: flex;
+}
+
+.btn-reset {
+  padding: 0;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+
+.conteiner {
+  width: 70%;
+  margin: 0 auto;
+}
+
+.header {
+  padding: 20px;
+  box-shadow:0 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.header_logo {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  margin-right: 20px;
+  border: 1px solid #9873FF;
+  border-radius: 100%;
+  background: #9873FF;
+  font-size: 18px;
+  color: white;
+  align-items: center;
+  justify-content: center;
+}
+
+.header_input {
+  width: 581px;
+  padding: 15px;
+  border: 1px solid rgba(51, 51, 51, 0.2);
+  outline: none;
+  color: black;
+  font-size: 14px;
+}
+
+.main {
+  padding: 50px;
+  background-color: #F5F5F5;
+}
+
+.title {
+  margin-bottom: 30px;
+  font-size: 24px;
+}
+
+.thead {
+  background-color: #F5F5F5;
+}
+
+.main_btn {
+  padding: 10px 20px;
+  align-items: center;
+  border: 1px solid #9873FF;
+  font-size: 14px;
+  color: #9873FF;
+}
+
+.main_btn_svg {
+  margin-right: 10px;
+}
+
+.btn-contact {
+  border: none;
+  background-color: transparent;
+}
+
+.table .id {
+  color: #B0B0B0;
+}
+
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 99998;
+  background-color: rgba(0, 0, 0, .3);
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .4s, visibility .4s;
+}
+
+.modal_box {
+  max-width: 500px;
+  padding: 45px;
+  z-index: 1;
+  margin: 30px 15px;
+  background-color: white;
+  transform: scale(0);
+  transition: transform .8s;
+}
+
+.modal_close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background-color: transparent;
+  padding: 5px;
+}
+
+.modal.open {
+  visibility: visible;
+  opacity: 1;
+}
+
+.modal.open .modal_box {
+  transform: scale(1);
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.text-field {
+  width: 350px;
+  position: relative;
+}
+
+.text-field__inp {
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+  appearance: none;
+  font-size: 18px;
+  border-bottom: 1px solid rgb(159, 159, 159);
+  transition: border-color .3s;
+}
+
+.text-field__inp:focus {
+  border-color: rgb(17, 46, 232);
+}
+
+.text-field__placeholder {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 10px;
+  color: rgb(159, 159, 159);
+  font-size: 18px;
+  pointer-events: none;
+  transform-origin: left;
+  transition: top .3s, transform .3s, color .3s;
+}
+
+.text-field__inp:focus+.text-field__placeholder,
+.text-field__inp:not(:focus):valid+.text-field__placeholder {
+  top: -15px;
+  transform: scale(.85);
+  color: rgb(17, 46, 232);
+}
