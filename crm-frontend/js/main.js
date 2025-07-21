@@ -1,70 +1,58 @@
-// import { getUsersFromServer } from './data.js';
+import { getUsersFromServer } from './data.js';
 import { mainModal } from './modals.js';
 import * as getTable from './table.js';
-// import autocomplete from './search.js';
+import autocomplete from './search.js';
+import { createElement } from './createElement.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const wrapper = document.querySelector('.wrapper');
   const main = document.querySelector('.main');
-  const container = document.createElement('div');
+  const container = createElement('div', ['container', 'main__container']);
 
-  container.classList.add('container', 'main__container');
   main.classList.add('main');
 
   // Получить ФИ клиентов для поиска
-  // const autocompleteSearch = async (parent) => {
-  //   const data = await getUsersFromServer();
-  //   const dataUsers = data.users;
-  //   const usersName = dataUsers.map((x) => x.name);
-  //   const usersSurname = dataUsers.map((y) => y.surname);
+  const autocompleteSearch = async (parent) => {
+    const data = await getUsersFromServer();
+    const dataUsers = data.users;
+    const usersName = dataUsers.map((x) => x.name);
+    const usersSurname = dataUsers.map((y) => y.surname);
 
-  //   const form = document.createElement('form');
-  //   const inputContainer = document.createElement('div');
-  //   const search = document.createElement('input');
+    const form = createElement('form', ['header__form'], { autocomplete: 'off' });
+    const inputContainer = createElement('div', ['header__input-container', 'autocomplete']);
+    const search = createElement('input', ['header__search'], { placeholder: 'Введите запрос' });
 
-  //   form.setAttribute('autocomplete', 'off');
-  //   form.classList.add('header__form');
-  //   inputContainer.classList.add('header__input-container', 'autocomplete');
+    let timeout = '';
+    search.addEventListener('input', (e) => {
+      const value = e.currentTarget.value;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        getTable.createTableBody({ filter: value });
+      }, 300);
+    });
 
-  //   search.classList.add('header__search');
-  //   search.placeholder = 'Введите запрос';
+    autocomplete(search, usersSurname, usersName);
 
-  //   let timeout = '';
-  //   search.addEventListener('input', (e) => {
-  //     const value = e.currentTarget.value;
-  //     clearTimeout(timeout);
-  //     timeout = setTimeout(() => {
-  //       getTable.createTableBody({ filter: value });
-  //     }, 300);
-  //   });
-
-  //   autocomplete(search, usersSurname, usersName);
-
-  //   inputContainer.append(search);
-  //   form.append(inputContainer);
-  //   parent.append(form);
-  // };
+    inputContainer.append(search);
+    form.append(inputContainer);
+    parent.append(form);
+  };
 
   //создание header'a
   const createHeader = async (parent) => {
     const header = document.querySelector('.header');
-    const headerContainer = document.createElement('div');
-    const logo = document.createElement('div');
-
-    headerContainer.classList.add('container', 'header__container');
     header.classList.add('header');
-    logo.classList.add('header__logo');
+    const headerContainer = createElement('div', ['container', 'header__container']);
+    const logo = createElement('div', ['header__logo']);
 
     headerContainer.append(logo);
-    // autocompleteSearch(headerContainer);
+    autocompleteSearch(headerContainer);
     header.append(headerContainer);
     parent.append(header);
   };
 
   const createTitle = () => {
-    const title = document.createElement('h1');
-
-    title.classList.add('title', 'main__title');
+    const title = createElement('h1', ['title', 'main__title']);
     title.textContent = 'Клиенты';
 
     container.append(title);
@@ -72,41 +60,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   //создание таблицы
   const createTable = () => {
-    const tableContainer = document.createElement('div');
+    const tableContainer = createElement('div', ['table-container'], { 'data-simplebar': true });
     let table;
 
     if (document.querySelector('.table')) {
       table = document.querySelector('.table');
       table.textContent = '';
     } else {
-      table = document.createElement('table');
-      table.classList.add('table');
+      table = createElement('table', ['table']);
     }
 
     getTable.createHeaderTable(table);
     getTable.createTableBody('', table);
 
     tableContainer.append(table);
-    tableContainer.classList.add('table-container');
-    tableContainer.dataset.simplebar = true;
-
     container.append(tableContainer);
   };
 
   // Создание кнопки "Добавить клиента"
   const createAddButton = () => {
-    const button = document.createElement('button');
-    const buttonContainer = document.createElement('div');
-
+    const button = createElement('button', ['main__button']);
     button.textContent = 'Добавить пользователя';
-    button.classList.add('main__button');
     button.addEventListener('click', () => {
       mainModal();
     });
 
-    buttonContainer.classList.add('main__button-container');
-    buttonContainer.append(button);
+    const buttonContainer = createElement('div', ['main__button-container']);
 
+    buttonContainer.append(button);
     container.append(buttonContainer);
   };
 

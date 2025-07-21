@@ -1,5 +1,6 @@
-// import * as dataServer from './data.js';
+import * as dataServer from './data.js';
 import { createTableBody } from './table.js'
+import { createElement } from './createElement.js';
 
 const TYPE = {
   new: 'new',
@@ -23,54 +24,44 @@ const CONTACT_TYPES = {
 
 // Удалить пользователя
 export function deleteUser(id) {
-  const modal = document.createElement('div');
-  const modalContent = document.createElement('div');
-  const title = document.createElement('h2');
-  const text = document.createElement('p');
+  const modal = createElement('div', ['modal', 'modal__delete']);
+  const modalContent = createElement('div', ['modal__content']);
+  const title = createElement('h2', ['modal__title', 'modal__title_delete']);
+  const text = createElement('p', ['modal__text']);
+  const deleteButton = createElement('button', ['modal__submit']);
+  const cancelButton = createElement('button', ['modal__cancel']);
+  const closeButton = createElement('button', ['modal__close']);
 
-  const deleteButton = document.createElement('button');
-  const cancelButton = document.createElement('button');
-  const closeButton = document.createElement('button');
+  title.textContent ='Удалить клиента';
+  text.textContent = 'Вы действительно хотите удалить данного клиента?';
+  deleteButton.textContent = 'Удалить';
+  cancelButton.textContent = 'Отмена';
 
-  modal.classList.add('modal', 'modal__delete');
   setTimeout(() => {
     modal.classList.add('active');
   }, 300);
   modal.append(modalContent);
 
-  deleteButton.textContent = 'Удалить';
-  deleteButton.classList.add('modal__submit');
   deleteButton.addEventListener('click', async () => {
     deleteButton.classList.toggle('modal__submit_loading');
 
-    await dataServer.deleteUserToServer(id);
-    createTableBody();
-
-    deleteButton.classList.toggle('modal__submit_loading');
-    modal.remove();
+    try {
+      await dataServer.deleteUserToServer(id);
+      createTableBody();
+    } catch (error) {
+      console.error('Ошибка при удалении пользователя:', error);
+    } finally {
+      deleteButton.classList.toggle('modal__submit_loading');
+      modal.remove();
+    }
   });
 
-  cancelButton.textContent = 'Отмена';
-  cancelButton.classList.add('modal__cancel');
-
-  closeButton.classList.add('modal__close');
   closeButton.addEventListener('click', () => {
     modal.remove();
   });
 
-  modalContent.classList.add('modal__content');
-  modalContent.append(title);
-  modalContent.append(text);
-  modalContent.append(closeButton);
-  modalContent.append(deleteButton);
-  modalContent.append(cancelButton);
+  modalContent.append(title, text, closeButton, deleteButton, cancelButton);
   modalContent.addEventListener('click', (e) => { e._isClickWithimModal = true; });
-
-  title.textContent = 'Удалить клиента';
-  title.classList.add('modal__title', 'modal__title_delete');
-
-  text.textContent = 'Вы действительно хотите удалить данного клиента?';
-  text.classList.add('modal__text');
 
   document.querySelector('.wrapper').append(modal);
 
@@ -128,15 +119,12 @@ const addContact = (block, button, data = { type: '', value: '' }) => {
     'Другое': INPUT_TYPES.text,
   };
 
-  const contactBlock = document.createElement('div');
-  const select = document.createElement('select');
-  const input = document.createElement('input');
-  const cancel = document.createElement('button');
+  const contactBlock = createElement('div', ['modal-contacts__item']);
+  const select = createElement('select');
+  const input = createElement('input', ['modal-contacts__input'], { placeholder: 'Введите данные контакта', value: data.value });
+  const cancel = createElement('button', ['modal-contacts__cancel']);
 
-  input.placeholder = 'Введите данные контакта';
-  input.value = data.value;
   input.type = types[data.type] || INPUT_TYPES.tel;
-  input.classList.add('modal-contacts__input');
 
   // Добавить маску для записи телефона или по умолчанию
   if (data.type === CONTACT_TYPES.tel || data.type === '') {
@@ -152,7 +140,6 @@ const addContact = (block, button, data = { type: '', value: '' }) => {
 
   block.classList.add('modal__contacts_active');
 
-  cancel.classList.add('modal-contacts__cancel');
   cancel.addEventListener('click', (e) => {
     const maxContacts = 10;
     e.preventDefault();
@@ -178,12 +165,7 @@ const addContact = (block, button, data = { type: '', value: '' }) => {
     }
   });
 
-  contactBlock.classList.add('modal-contacts__item');
-
-  contactBlock.append(select);
-  contactBlock.append(input);
-  contactBlock.append(cancel);
-
+  contactBlock.append(select, input, cancel);
   setupSelect(select);
   button.before(contactBlock);
 };
@@ -225,28 +207,30 @@ const validateField = (form) => {
       }
     };
 
-    const surname = form.querySelector('#surName');
-    const firstname = form.querySelector('#firstName');
-    const surnameError = contactBlock.querySelector('.modal__error_surname')
-      || document.createElement('div');
-    const firstnameError = contactBlock.querySelector('.modal__error_firstname')
-      || document.createElement('div');
+    try {
+      const surname = form.querySelector('#surName');
+      const firstname = form.querySelector('#firstName');
+      const surnameError = contactBlock.querySelector('.modal__error_surname') || createElement('div');
+      const firstnameError = contactBlock.querySelector('.modal__error_firstname') || createElement('div');
 
-    setupError(surnameError, contactBlock, 'Введите фамилию', 'surname');
-    setupError(firstnameError, contactBlock, 'Введите имя', 'firstname');
+      setupError(surnameError, contactBlock, 'Введите фамилию', 'surname');
+      setupError(firstnameError, contactBlock, 'Введите имя', 'firstname');
 
-    const er1 = isInputError(surnameError, surname);
-    const er2 = isInputError(firstnameError, firstname);
+      const er1 = isInputError(surnameError, surname);
+      const er2 = isInputError(firstnameError, firstname);
 
-    validate = er1 && er2;
+      validate = er1 && er2;
 
-    surname.addEventListener('input', (e) => {
-      isInputError(surnameError, e.currentTarget, 'surname', contactBlock, 'Введите фамилию');
-    });
+      surname.addEventListener('input', (e) => {
+        isInputError(surnameError, e.currentTarget, 'surname', contactBlock, 'Введите фамилию');
+      });
 
-    firstname.addEventListener('input', (e) => {
-      isInputError(firstnameError, e.currentTarget, 'firstname', contactBlock, 'Введите имя');
-    });
+      firstname.addEventListener('input', (e) => {
+        isInputError(firstnameError, e.currentTarget, 'firstname', contactBlock, 'Введите имя');
+      });
+    } catch (error) {
+      console.error('Ошибка при валидации полей формы:', error);
+    }
   };
 
   const validateContact = (contacts, errorBlock) => {
@@ -265,8 +249,7 @@ const validateField = (form) => {
     };
 
     const choseSelectType = (selectType, input, contact) => {
-      const error = errorBlock.querySelector('.modal__error_contact')
-        || document.createElement('div');
+      const error = errorBlock.querySelector('.modal__error_contact') || createElement('div');
 
       let isValidate = true;
 
@@ -308,7 +291,7 @@ const validateField = (form) => {
 
   let validate = true;
   const contacts = form.querySelectorAll('.modal-contacts__item');
-  const errorBlock = form.querySelector('.modal__error-block') || document.createElement('div');
+  const errorBlock = form.querySelector('.modal__error-block') || createElement('div');
 
   errorBlock.classList.add('modal__error-block');
   form.querySelector('.modal__submit').before(errorBlock);
@@ -329,28 +312,32 @@ export async function mainModal(type = TYPE.new, id = '') {
     }
   };
 
-  const modal = document.createElement('div');
-  const modalContent = document.createElement('div');
-  const title = document.createElement('h2');
-  const form = document.createElement('form');
+  const modal = createElement('div', ['modal']);
+  const modalContent = createElement('div', ['modal__content']);
+  const title = createElement('h2', ['modal__title']);
+  const form = createElement('form', ['modal__form', 'modal-form']);
 
-  const firstName = document.createElement('input');
-  const firstNameLabel = document.createElement('label');
-  const firstNameBlock = document.createElement('div');
+  const firstName = createElement('input', ['modal__input'], { id: 'firstName', type: 'text' });
+  const firstNameLabel = createElement('label', ['modal__placeholder'], { for: 'firstName' });
+  const firstNameBlock = createElement('div', ['modal__input-container']);
 
-  const surName = document.createElement('input');
-  const surNameLabel = document.createElement('label');
-  const surNameBlock = document.createElement('div');
+  const surName = createElement('input', ['modal__input'], { id: 'surName', type: 'text' });
+  const surNameLabel = createElement('label', ['modal__placeholder'], { for: 'surName' });
+  const surNameBlock = createElement('div', ['modal__input-container']);
 
-  const lastName = document.createElement('input');
-  const lastNameLabel = document.createElement('label');
-  const lastNameBlock = document.createElement('div');
+  const lastName = createElement('input', ['modal__input'], { id: 'lastName', type: 'text' });
+  const lastNameLabel = createElement('label', ['modal__placeholder'], { for: 'lastName' });
+  const lastNameBlock = createElement('div', ['modal__input-container']);
 
-  const contactBlock = document.createElement('div');
-  const addContactButton = document.createElement('button');
-  const saveButton = document.createElement('button');
-  const cancelButton = document.createElement('button');
-  const closeButton = document.createElement('button');
+  const contactBlock = createElement('div', ['modal__contacts', 'modal-contacts']);
+  const addContactButton = createElement('button', ['modal__add-contact']);
+  const saveButton = createElement('button', ['modal__submit']);
+  const cancelButton = createElement('button', ['modal__cancel']);
+  const closeButton = createElement('button', ['modal__close']);
+
+  addContactButton.textContent = 'Добавить контакт';
+  saveButton.textContent = 'Сохранить';
+  cancelButton.textContent = type === TYPE.new ? 'Отмена' : 'Удалить клиента';
 
   let user = {};
 
@@ -360,13 +347,12 @@ export async function mainModal(type = TYPE.new, id = '') {
   }
 
   if (user.message) {
-    const text = document.createElement('p');
+    const text = createElement('p');
     text.textContent = 'Пользователь не найден';
     modalContent.append(text);
     return;
   }
 
-  modal.classList.add('modal');
   setTimeout(() => {
     modal.classList.add('active');
   }, 300);
@@ -375,21 +361,11 @@ export async function mainModal(type = TYPE.new, id = '') {
     modal.remove();
   });
 
-  modalContent.classList.add('modal__content');
-  modalContent.append(title);
-  modalContent.append(closeButton);
+  modalContent.append(title, closeButton);
   modalContent.dataset.simplebar = true;
-
-  contactBlock.classList.add('modal__contacts', 'modal-contacts');
   contactBlock.append(addContactButton);
 
-  form.classList.add('modal__form', 'modal-form');
-  form.append(surNameBlock);
-  form.append(firstNameBlock);
-  form.append(lastNameBlock);
-  form.append(contactBlock);
-  form.append(saveButton);
-  form.append(cancelButton);
+  form.append(surNameBlock, firstNameBlock, lastNameBlock, contactBlock, saveButton, cancelButton);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -415,8 +391,7 @@ export async function mainModal(type = TYPE.new, id = '') {
 
       if (data.errors) {
         for (const error of data.errors) {
-          const er = document.createElement('div');
-          er.classList.add('modal__error');
+          const er = createElement('div', ['modal__error']);
           er.textContent = error.message;
           errors.append(er);
         }
@@ -454,55 +429,38 @@ export async function mainModal(type = TYPE.new, id = '') {
   });
 
   // surname
-  surName.classList.add('modal__input');
   surName.value = user.surname || '';
   surName.autocomplete = 'off';
-  surName.id = 'surName';
   surName.addEventListener('blur', () => {
     hidePlaceholder(surName, surNameLabel);
   });
 
-  surNameLabel.classList.add('modal__placeholder');
   surNameLabel.innerHTML = 'Фамилия<span class="symbol">*</span>';
-  surNameLabel.setAttribute('for', 'surName');
 
-  surNameBlock.append(surName);
-  surNameBlock.append(surNameLabel);
-  surNameBlock.classList.add('modal__input-container');
+  surNameBlock.append(surName, surNameLabel);
 
   // firstname
-  firstName.classList.add('modal__input');
   firstName.value = user.name || '';
   firstName.autocomplete = 'off';
-  firstName.id = 'firstName';
   firstName.addEventListener('blur', () => {
     hidePlaceholder(firstName, firstNameLabel);
   });
 
-  firstNameLabel.classList.add('modal__placeholder');
   firstNameLabel.innerHTML = 'Имя<span class="symbol">*</span>';
-  firstNameLabel.setAttribute('for', 'firstName');
 
-  firstNameBlock.append(firstName);
-  firstNameBlock.append(firstNameLabel);
-  firstNameBlock.classList.add('modal__input-container');
+  firstNameBlock.append(firstName, firstNameLabel);
 
   // lastname
-  lastName.classList.add('modal__input');
   lastName.value = user.lastName || '';
+  
   lastName.autocomplete = 'off';
-  lastName.id = 'lastName';
   lastName.addEventListener('blur', () => {
     hidePlaceholder(lastName, lastNameLabel);
   });
 
-  lastNameLabel.classList.add('modal__placeholder');
   lastNameLabel.innerHTML = 'Отчество';
-  lastNameLabel.setAttribute('for', 'lastName');
 
-  lastNameBlock.append(lastName);
-  lastNameBlock.append(lastNameLabel);
-  lastNameBlock.classList.add('modal__input-container');
+  lastNameBlock.append(lastName, lastNameLabel);
 
   hidePlaceholder(surName, surNameLabel);
   hidePlaceholder(firstName, firstNameLabel);
@@ -510,7 +468,6 @@ export async function mainModal(type = TYPE.new, id = '') {
 
   title.innerHTML = type === TYPE.new
     ? 'Новый клиент' : `Изменить данные <span class='modal-title__id'>ID: ${user.id}</span>`;
-  title.classList.add('modal__title');
 
   if (user.contacts) {
     for (const contact of user.contacts) {
@@ -518,9 +475,7 @@ export async function mainModal(type = TYPE.new, id = '') {
     }
   }
 
-  addContactButton.classList.add('modal__add-contact');
   addContactButton.dataset.index = contactBlock.childNodes.length - 1;
-  addContactButton.textContent = 'Добавить контакт';
   addContactButton.addEventListener('click', (e) => {
     const index = addContactButton.dataset.index;
     addContactButton.dataset.index = Number(index) + 1;
@@ -531,18 +486,12 @@ export async function mainModal(type = TYPE.new, id = '') {
     }
   });
 
-  closeButton.classList.add('modal__close');
   closeButton.addEventListener('click', () => {
     form.reset();
     modal.remove();
   });
 
-  saveButton.textContent = 'Сохранить';
   saveButton.type = 'submit';
-  saveButton.classList.add('modal__submit');
-
-  cancelButton.textContent = type === TYPE.new ? 'Отмена' : 'Удалить клиента';
-  cancelButton.classList.add('modal__cancel');
 
   cancelButton.addEventListener('click', (e) => {
     if (type === TYPE.change) {

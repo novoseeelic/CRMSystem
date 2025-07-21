@@ -1,21 +1,22 @@
+import { getUsersFromServer } from './data.js';
+import * as modals from './modals.js';
+import { createElement } from './createElement.js';
+
+const TYPE = {
+  new: 'new',
+  change: 'change',
+};
+
 let users = [];
 
 // Загрузка пользователей
 const loading = (body = document.querySelector('.table-body')) => {
-    const row = document.createElement('tr');
-    const item = document.createElement('td');
-    const loader = document.createElement('div');
-  
-    row.classList.add('loader');
-  
-    item.classList.add('loader__column');
-    item.colSpan = 6;
-  
-    loader.classList.add('loader__item');
+    const row = createElement('tr', ['loader']);
+    const item = createElement('td', ['loader__column'], { colSpan: 6 });
+    const loader = createElement('div', ['loader__item']);
   
     item.append(loader);
     row.append(item);
-  
     body.append(row);
 };
 
@@ -32,10 +33,7 @@ const headerSort = (parent) => {
     let i = 0;
   
     for (const key of Object.keys(data)) {
-      const item = document.createElement('th');
-  
-      item.classList.add('table-header__item', `table-header__item_${key}`);
-  
+      const item = createElement('th', ['table-header__item', `table-header__item_${key}`]);
       item.textContent = data[key];
   
       const countSortRow = 4;
@@ -50,7 +48,7 @@ const headerSort = (parent) => {
   
           for (const item of items) {
             item.classList.remove('table-header__sort_active', 'table-header__sort_active-reverse');
-            item.dataset.filterTop = 1;   //Показывает в какую сторону сортировать 1: вверх -1:вниз
+            item.dataset.filterTop = 1;   
             item.removeAttribute('data-active');
           };
   
@@ -67,8 +65,7 @@ const headerSort = (parent) => {
           item.dataset.filterTop = -filterTop;
         });
   
-        const arrow = document.createElement('span');
-        arrow.classList.add('table-header__arrow');
+        const arrow = createElement('span', ['table-header__arrow']);
   
         item.append(arrow);
   
@@ -120,14 +117,12 @@ async function sortUsers(users, sortType = 5, direction = 1) {
       default:
         break;
     }
-  }
+}
 
 //Создание header'a таблицы
 export const createHeaderTable = async (table) => {
-    const header = document.createElement('thead');
-    const row = document.createElement('tr');
-  
-    header.classList.add('table__header', 'table-header');
+    const header = createElement('thead', ['table__header', 'table-header']);
+    const row = createElement('tr');
   
     headerSort(row);
     header.append(row);
@@ -142,8 +137,7 @@ export async function createTableBody(tableData = '', table = document.querySele
       body.textContent = '';
       users = tableData.users;
     } else {
-      body = document.createElement('tbody');
-      body.classList.add('table__body', 'table-body');
+      body = createElement('tbody', ['table__body', 'table-body']);
       table.append(body);
     }
   
@@ -176,10 +170,8 @@ const createTableItem = (user, body) => {
         mail: 'img/mail.svg',
         other: 'img/other.svg',
       };
-      const contact = document.createElement('img');
+      const contact = createElement('img', ['contacts__item']);
       let linkType = '';
-  
-      contact.classList.add('contacts__item');
   
       switch (item.type) {
         case 'Телефон':
@@ -215,10 +207,8 @@ const createTableItem = (user, body) => {
     };
   
     const createContacts = (contacts, container) => {
-      const contactContainer = document.createElement('div');
+      const contactContainer = createElement('div', ['table-row__contacts', 'contacts']);
       const maxContactsShows = 4;
-  
-      contactContainer.classList.add('table-row__contacts', 'contacts');
   
       const count = contacts.length > maxContactsShows ? maxContactsShows : contacts.length;
       for (let i = 0; i < count; i++) {
@@ -226,10 +216,8 @@ const createTableItem = (user, body) => {
       }
   
       if (contacts.length > maxContactsShows) {
-        const contact = document.createElement('div');
+        const contact = createElement('div', ['contacts__item_more'], { textContent: '+' + (contacts.length - maxContactsShows) });
   
-        contact.classList.add('contacts__item_more');
-        contact.textContent = '+' + (contacts.length - maxContactsShows);
         contactContainer.append(contact);
         contact.addEventListener('click', () => {
           contact.remove();
@@ -254,65 +242,44 @@ const createTableItem = (user, body) => {
       return `${day}.${month}.${year} <span class = 'table-row__time'>${time}</span>`;
     };
   
-    const row = document.createElement('tr');
-  
-    const id = document.createElement('td');
-    const fullname = document.createElement('td');
-    const createDate = document.createElement('td');
-    const lastUpdateDate = document.createElement('td');
-    const contacts = document.createElement('td');
-    const buttons = document.createElement('td');
+    const row = createElement('tr', ['table-row', 'table-body__row']);
+    const id = createElement('td', ['table-row__elem', 'table-row__elem_id']);
+    const fullname = createElement('td', ['table-row__elem', 'table-row__elem_fullname']);
+    const createDate = createElement('td', ['table-row__elem', 'table-row__elem_createDate']);
+    const lastUpdateDate = createElement('td', ['table-row__elem', 'table-row__elem_lastUpdateDate']);
+    const contacts = createElement('td', ['table-row__elem', 'table-row__elem_contacts']);
+    const buttons = createElement('td', ['table-row__elem', 'table-buttons']);
+
+    id.textContent = user.id;
   
     const actions = {
-      changeButton: document.createElement('button'),
-      deleteButton: document.createElement('button'),
+      changeButton: createElement('button', ['table-buttons__button', 'table-buttons__button_change']),
+      deleteButton: createElement('button', ['table-buttons__button', 'table-buttons__button_delete']),
     };
-  
-    row.classList.add('table-row', 'table-body__row');
-  
-    actions.changeButton.classList.add('table-buttons__button', 'table-buttons__button_change');
-    actions.deleteButton.classList.add('table-buttons__button', 'table-buttons__button_delete');
-  
+
     actions.changeButton.textContent = 'Изменить';
+    actions.deleteButton.textContent = 'Удалить';
+  
     actions.changeButton.addEventListener('click', async () => {
       await modals.mainModal(TYPE.change, user.id);
     });
   
-    actions.deleteButton.textContent = 'Удалить';
     actions.deleteButton.addEventListener('click', async () => {
       modals.deleteUser(user.id);
     });
-  
-    id.textContent = user.id;
-    id.classList.add('table-row__elem', 'table-row__elem_id');
   
     fullname.innerHTML =
       `<a class="table-row__elem-link" href="client.html?id=${user.id}">
     ${user.surname} ${user.name} ${user.lastName}
     </a>`;
-    fullname.classList.add('table-row__elem', 'table-row__elem_fullname');
-  
     createDate.innerHTML = getDate(new Date(user.createdAt));
-    createDate.classList.add('table-row__elem', 'table-row__elem_createDate');
-  
     lastUpdateDate.innerHTML = getDate(new Date(user.updatedAt));
-    lastUpdateDate.classList.add('table-row__elem', 'table-row__elem_lastUpdateDate');
   
     createContacts(user.contacts, contacts);
   
-    contacts.classList.add('table-row__elem', 'table-row__elem_contacts');
+    buttons.append(actions.changeButton, actions.deleteButton);
   
-    buttons.classList.add('table-row__elem', 'table-buttons');
-    buttons.append(actions.changeButton);
-    buttons.append(actions.deleteButton);
-  
-    row.append(id);
-    row.append(fullname);
-    row.append(createDate);
-    row.append(lastUpdateDate);
-    row.append(contacts);
-    row.append(buttons);
-  
+    row.append(id, fullname, createDate, lastUpdateDate, contacts, buttons);
     body.append(row);
 };
   
